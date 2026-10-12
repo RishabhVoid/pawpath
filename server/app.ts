@@ -348,10 +348,10 @@ function finishRoutes(app: express.Express, store: Store, h: Helpers) {
     app.get('/{*path}', (_req, res) => res.sendFile(resolve('client/dist/index.html')));
   }
   app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    if (error instanceof z.ZodError) return res.status(400).json({ reason: 'validation', message: error.issues[0]?.message || 'Check your input.' });
+    if (error instanceof z.ZodError) return res.status(400).json({ reason: 'validation', message: 'Check the details and try again.' });
     if (error instanceof AppError) return res.status(error.status).json({ reason: error.reason, message: error.message, suggestMode: error.suggestMode });
     if ((error as { type?: string }).type === 'entity.too.large') return res.status(413).json({ reason: 'photo_size', message: 'That photo is too large. Try a smaller image.' });
-    if ((error as { type?: string }).type === 'entity.parse.failed') return res.status(400).json({ reason: 'invalid_json', message: 'The request must contain valid JSON.' });
+    if ((error as { type?: string }).type === 'entity.parse.failed') return res.status(400).json({ reason: 'invalid_json', message: 'Something went wrong sending that request. Please try again.' });
     console.error('Request failed:', error instanceof Error ? error.name : 'Unknown error');
     res.status(500).json({ reason: 'internal', message: 'Something went wrong. Please try again.' });
   });

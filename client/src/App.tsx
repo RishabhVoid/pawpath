@@ -286,7 +286,7 @@ export function App() {
   async function photo(file: File) {
     await task('photo', async () => {
       const image = await resizePhoto(file), result = await brainVision(image, mode, keepPhotos);
-      if (!result.is_outdoor || result.is_screen) { setNotice('Try an outdoor photo of a tree, flower, bird, or sky.'); return; }
+      if (!result.is_outdoor || result.is_screen) { setNotice('Take a photo outside with your surroundings clearly visible.'); return; }
       setNotice('Discovery saved: ' + result.label); await refreshMemories();
       void speak('We just discovered: ' + result.label + ' (' + result.category + '). React with curiosity, using a relevant past memory only if one exists.');
     });

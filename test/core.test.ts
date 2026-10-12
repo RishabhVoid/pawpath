@@ -8,6 +8,7 @@ import { createBridge } from '../server/bridge.js';
 import { DevelopmentStore, type Row } from '../server/store.js';
 import { currentPet, geoCell, levelFor, walkReward } from '../shared/pet.js';
 import { completion, parseVision } from '../server/brain.js';
+import { readVision } from '../shared/vision.js';
 import { acceptedStep, keepWalkAwake, locate, watchWalk } from '../client/src/lib/walk.js';
 import { isHandheld } from '../client/src/lib/device.js';
 import { destinationMap, walkingDirections } from '../client/src/JourneyMap.js';
@@ -713,6 +714,33 @@ test('pet state decays without inference and vision rejects malformed or invalid
   assert.equal(currentPet(pet, 3_600_000).hunger, 58); assert.equal(levelFor(400), 3); assert.equal(walkReward(1000).food, 40);
   assert.throws(() => parseVision('not JSON')); assert.throws(() => parseVision('{"is_outdoor":"yes"}'));
   assert.equal(parseVision('```json\n{"is_outdoor":true,"category":"tree","label":"A big oak"}\n```').category, 'tree');
+});
+
+test('outdoor discoveries accept unfamiliar model categories without exposing parser details', () => {
+  for (const category of ['plant', 'insect', 'street', 'animal', 'trail']) {
+    const result = readVision(JSON.stringify({ is_outdoor: true, category, label: 'A potted plant on a balcony', is_screen: false }));
+    assert.equal(result.category, 'other');
+    assert.equal(result.is_outdoor, true);
+    assert.equal(result.label, 'A potted plant on a balcony');
+  }
+  assert.equal(readVision(JSON.stringify({ is_outdoor: true, category: ' TREE ', label: 'An oak' })).category, 'tree');
+  assert.equal(readVision(JSON.stringify({ is_outdoor: false, category: 'plant', label: 'An indoor plant' })).is_outdoor, false);
+  assert.equal(readVision(JSON.stringify({ is_outdoor: true, category: 'plant', label: 'A photo on a screen', is_screen: true })).is_screen, true);
+  for (const reply of ['not JSON', '{"is_outdoor":"yes","category":"plant","label":"A plant"}', '{"is_outdoor":true,"category":"plant","label":" "}']) {
+    assert.throws(() => readVision(reply), { name: 'Error', message: 'Gemma could not read that discovery. Try a clearer outdoor photo.' });
+  }
+});
+
+test('potted plant discoveries save as other and invalid requests return plain-language errors', async () => {
+  const f = fixture(), a = await f.account();
+  const app = createApp(f.store, { embed: async () => [1, ...Array(383).fill(0)], completion: async () => JSON.stringify({ is_outdoor: true, category: 'plant', label: 'A leafy potted plant outside', is_screen: false }) });
+  const response = await inject(app as any, { method: 'POST', url: '/api/local/vision', headers: { authorization: 'Bearer ' + a.token }, payload: { image: 'data:image/jpeg;base64,' + Buffer.from([0xff, 0xd8, 0xff]).toString('base64') } });
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().result.category, 'other');
+  assert.ok((await f.store.find('memories', { petId: a.pet._id })).some(memory => memory.text === 'A leafy potted plant outside' && memory.category === 'other'));
+  const invalid = await f.request('POST', '/api/memory', { text: 'A plant', category: 'plant' }, a.token);
+  assert.equal(invalid.statusCode, 400);
+  assert.deepEqual(invalid.json(), { reason: 'validation', message: 'Check the details and try again.' });
 });
 
 test('Gemma place choice resolves only to real candidates and keeps its prompt within chat bounds', () => {

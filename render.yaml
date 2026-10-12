@@ -3,7 +3,7 @@ services:
     name: pawpath
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm check:release && PAWPATH_OFFLINE=false pnpm warmup
+    buildCommand: mkdir -p /tmp/pawpath-bin && corepack enable --install-directory /tmp/pawpath-bin pnpm && export PATH="/tmp/pawpath-bin:$PATH" && pnpm install --frozen-lockfile && pnpm check:release && PAWPATH_OFFLINE=false pnpm warmup
     startCommand: node dist-server/server/index.js
     healthCheckPath: /api/health
     envVars:

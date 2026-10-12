@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-server/
+.env*
+*.env
+.cache/
+coverage/
+.DS_Store
+.pnpm-store/
+*.[eE][nN][vV]*
+!/.example.env

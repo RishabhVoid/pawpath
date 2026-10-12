@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pawpath
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm check:release && PAWPATH_OFFLINE=false pnpm warmup
+    startCommand: node dist-server/server/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: pawpath
+      - key: GEOAPIFY_API_KEY
+        sync: false
+      - key: PAWPATH_OFFLINE
+        value: "true"

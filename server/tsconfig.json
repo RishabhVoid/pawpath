@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
+    "strict": true, "skipLibCheck": true, "esModuleInterop": true,
+    "outDir": "../dist-server", "rootDir": "..", "types": ["node"]
+  },
+  "include": ["*.ts", "../shared/*.ts", "../scripts/*.ts"],
+  "exclude": ["node_modules", "**/*.env*", "**/*.ENV*", "**/*.Env*", "**/*.eNv*", "**/*.enV*", "**/*.ENv*", "**/*.eNV*", "**/*.EnV*"]
+}

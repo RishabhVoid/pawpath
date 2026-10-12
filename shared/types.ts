@@ -1,0 +1,28 @@
+export const species = ['pip', 'cinder', 'moss', 'puddle', 'reed', 'bramble', 'wisp', 'dew', 'truffle', 'drift'] as const;
+export const legacySpecies = ['sprout', 'fox', 'frog'] as const;
+export type Species = typeof species[number] | typeof legacySpecies[number];
+export const resolveSpecies = (value: Species): typeof species[number] => value === 'sprout' ? 'moss' : value === 'fox' ? 'cinder' : value === 'frog' ? 'puddle' : value;
+export const companionKinds: Record<typeof species[number], string> = { pip: 'Slug hare', cinder: 'Newt hound', moss: 'Sprout frog', puddle: 'Gill otter', reed: 'Marsh strider', bramble: 'Briar mouse', wisp: 'Moth owl', dew: 'Shell dragon', truffle: 'Beetle boar', drift: 'Kite ray' };
+export type BrainMode = 'browser' | 'host' | 'laptop';
+export type Category = 'bird' | 'tree' | 'flower' | 'water' | 'sky' | 'other';
+export type PlayerProfile = { nickname: string; pace: 'starting' | 'sometimes' | 'often'; interest: 'plants' | 'wildlife' | 'water'; tone: 'gentle' | 'playful' | 'bold' };
+export const equipmentSlots = ['head', 'face', 'neck', 'badge'] as const;
+export type EquipmentSlot = typeof equipmentSlots[number];
+export type Outfit = Partial<Record<EquipmentSlot, string>>;
+export type Pet = {
+  _id: string; userId: string; name: string; species: Species;
+  hunger: number; mood: number; energy: number; xp: number; level: number;
+  traits: string[]; updatedAt: number; lastWalkAt?: number;
+  companion?: Omit<PlayerProfile, 'nickname'>;
+  points?: number; ownedItems?: string[]; equippedItems?: Outfit; wardrobeVersion?: number;
+};
+export type Memory = { _id: string; petId: string; text: string; category: Category; geoCell?: string; createdAt: number; score?: number; embeddingStatus?: 'pending' | 'ready' | 'unavailable'; hasPhoto?: boolean };
+export type Destination = { name: string; lat: number; lon: number };
+export type JourneyPlan = { destination?: Destination };
+export type Walk = { _id: string; userId: string; petId: string; startedAt: number; endedAt: number | null; distanceM: number; geoCells: string[]; trackingHere?: boolean; destination?: Destination };
+export type Place = { id: string; name: string; category: Category; lat: number; lon: number; distanceM: number };
+export type VisionResult = { is_outdoor: boolean; category: Category; label: string; is_screen?: boolean };
+export type Friend = Pick<Pet, 'name' | 'species' | 'level' | 'traits' | 'equippedItems'> & { id: string };
+export type Usage = { places: number; placesLimit: number };
+export type Status = { storage: 'mongodb' | 'development'; localBrain: boolean; vectorReady: boolean };
+export type ChatInput = { role: 'system' | 'user' | 'assistant'; content: string | { type: string; text?: string; image_url?: { url: string } }[] };

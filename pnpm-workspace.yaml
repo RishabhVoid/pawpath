@@ -1,0 +1,6 @@
+allowBuilds:
+  onnxruntime-node: true
+  protobufjs: true
+  esbuild: true
+minimumReleaseAgeExclude:
+  - light-my-request@6.8.0

@@ -67,15 +67,23 @@ Phones and tablets use the computer host instead of downloading this model. The 
 
 ## How it works
 
-```mermaid
-flowchart LR
-    Phone[Phone: GPS and camera] <-->|Authenticated HTTPS jobs| API[Render: Express API and React app]
-    Host[Computer browser: Gemma on WebGPU] <-->|Authenticated long polling| API
-    API <--> DB[MongoDB: accounts, pets, walks and memories]
-    API --> Embed[MiniLM text embeddings]
-    Embed --> DB
-    API --> Places[Geoapify or Overpass]
-    HF[Hugging Face model files] --> Host
+```text
+            Authenticated HTTPS jobs                 Authenticated long polling
+ ┌───────┐ ───────────────────────▶ ┌─────────────┐ ◀─────────────────────── ┌──────────────┐
+ │ Phone │                          │   Render:   │                          │   Computer   │
+ │  GPS  │ ◀─────────────────────── │ Express API │ ───────────────────────▶ │   browser:   │
+ │   +   │                          │  + React    │                          │ Gemma WebGPU │
+ │ camera│                          │     app     │                          └──────┬───────┘
+ └───────┘                          └──────┬──────┘                                 ▲
+                                           │                                        │
+                       ┌───────────────────┼─────────────────────┐                  │
+                       ▼                   ▼                     ▼                  │
+                ┌─────────────┐   ┌─────────────────┐   ┌────────────────┐   ┌─────────────┐
+                │   MongoDB   │◀──│ MiniLM text     │   │ Geoapify or    │   │ Hugging Face │
+                │ accounts,   │   │ embeddings      │   │ Overpass       │   │ model files  │
+                │ pets, walks │   └─────────────────┘   └────────────────┘   └─────────────┘
+                │ + memories  │
+                └─────────────┘
 ```
 
 The client uses React, Vite, TypeScript, and Lucide icons. The Node/Express server serves both the production client and API from one origin. Zod validates requests and model responses.
